@@ -4,7 +4,6 @@ import re
 from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QPushButton, QLabel, QFileDialog, QLineEdit, QSizePolicy
 from PyQt5.QtCore import Qt
 from PIL import Image
-import pyheif
 
 class ImageToPDFConverter(QWidget):
     def __init__(self):
@@ -63,7 +62,7 @@ class ImageToPDFConverter(QWidget):
             self.lbl_status.setText(f'Error: {e}')
 
     def images_to_pdf(self, image_folder, output_pdf, page_size=(595, 842)):
-        image_files = [f for f in os.listdir(image_folder) if os.path.isfile(os.path.join(image_folder, f)) and f.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.gif', '.tiff', '.heif', '.heic'))]
+        image_files = [f for f in os.listdir(image_folder) if os.path.isfile(os.path.join(image_folder, f)) and f.lower().endswith(('.png', '.jpg', '.jpeg'))]
         
         # Custom sort function that takes numbers in the filenames into account
         image_files.sort(key=lambda f: [int(text) if text.isdigit() else text.lower() for text in re.split('(\d+)', f)])
@@ -72,19 +71,7 @@ class ImageToPDFConverter(QWidget):
 
         for image_file in image_files:
             image_path = os.path.join(image_folder, image_file)
-            if image_path.lower().endswith(('.heif', '.heic')):
-                heif_file = pyheif.read(image_path)
-                image = Image.frombytes(
-                    heif_file.mode, 
-                    heif_file.size, 
-                    heif_file.data,
-                    "raw",
-                    heif_file.mode,
-                    heif_file.stride,
-                )
-            else:
-                image = Image.open(image_path)
-            
+            image = Image.open(image_path)
             image = image.convert('RGB')
             image = image.resize(page_size, Image.ANTIALIAS)
             images.append(image)
